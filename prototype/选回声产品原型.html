@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>选回声 · 可交互产品原型</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='10' cy='16' r='8' fill='%23FF7A3D'/%3E%3Ccircle cx='22' cy='16' r='8' fill='%232F5CFF'/%3E%3C/svg%3E">
+<style>
+:root{
+  --o:#FF7A3D;--b:#2F5CFF;--ob2:#FF9A6B;--bb2:#7A9AFF;
+  --ink:#20242C;--sub:#787E8A;--faint:#B4B8C0;
+  --bg:#F5F2EB;--card:#FFFFFF;--line:#EAE6DC;--ok:#18A05E;--danger:#E5484D;
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;color:var(--ink);background:
+  radial-gradient(1200px 600px at 15% -10%, #FFE9DC 0%, transparent 60%),
+  radial-gradient(1000px 500px at 110% 110%, #E4EBFF 0%, transparent 55%),
+  #EFECE4;}
+.stage{display:flex;gap:56px;align-items:center;justify-content:center;min-height:100vh;padding:36px 24px}
+/* 左侧说明板 */
+.deck{max-width:360px;color:#3A3F49}
+.deck .logo{display:flex;align-items:center;gap:10px;font-size:30px;font-weight:800;letter-spacing:1px}
+.deck .logo .dot{width:22px;height:22px;border-radius:50%}
+.deck h2{font-size:26px;line-height:1.4;margin:26px 0 12px;font-weight:800}
+.deck p{font-size:14px;line-height:1.8;color:#5C6270}
+.deck .steps{margin-top:22px;border-top:1px dashed #C9C4B6;padding-top:18px}
+.deck .steps b{display:inline-block;background:#20242C;color:#fff;border-radius:8px;padding:2px 10px;font-size:12px;margin-right:8px}
+.deck .steps div{margin:10px 0;font-size:13px;color:#4A4F5A;line-height:1.6}
+.deck .tag{display:inline-block;margin-top:20px;font-size:12px;color:#8A6D3F;background:#F7ECD2;border:1px solid #EAD9AC;padding:6px 12px;border-radius:999px}
+/* 手机框架 */
+.phone{width:390px;height:844px;border-radius:46px;background:#101215;padding:10px;box-shadow:0 30px 80px rgba(32,36,44,.28),0 8px 24px rgba(32,36,44,.16);position:relative;flex-shrink:0}
+.screen{width:100%;height:100%;background:var(--bg);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.statusbar{height:42px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;flex-shrink:0;color:var(--ink);background:var(--bg)}
+.statusbar svg{display:block}
+.app{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.app::-webkit-scrollbar{display:none}
+/* 通用 */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 18px 6px;position:sticky;top:0;background:var(--bg);z-index:5}
+.topbar .t{font-size:18px;font-weight:800}
+.topbar .icons{display:flex;gap:16px;align-items:center}
+.icon-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:none;cursor:pointer;box-shadow:0 2px 6px rgba(32,36,44,.06)}
+.icon-btn svg{width:20px;height:20px}
+.pad{padding:0 16px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 3px 14px rgba(32,36,44,.05);border:1px solid var(--line)}
+.muted{color:var(--sub);font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:999px;font-weight:600}
+.pill.o{background:#FFF0E6;color:#C14A10}.pill.b{background:#E9EEFF;color:#2745B8}.pill.g{background:#E6F6EE;color:#0E7A4A}.pill.gy{background:#F0F0F2;color:#5A5F68}.pill.dp{background:#F3E8FF;color:#7A2BC0}
+/* 首页 */
+.greet{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 12px}
+.greet .g b{font-size:17px;display:block}
+.greet .g span{font-size:12px;color:var(--sub)}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.daily{margin:4px 16px 12px;display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,#FFF3EA,#F6F0FF);border:1px solid #F0E2D6;border-radius:16px;padding:12px 14px;cursor:pointer}
+.daily .ic{width:36px;height:36px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.daily b{font-size:14px;display:block}
+.daily span{font-size:11px;color:var(--sub)}
+.poll-card{margin:0 16px 12px;cursor:pointer;transition:transform .15s}
+.poll-card:active{transform:scale(.98)}
+.poll-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.poll-head .nm{font-size:14px;font-weight:700}
+.poll-head .tm{font-size:11px;color:var(--faint);margin-top:2px}
+.poll-title{font-size:15px;font-weight:700;margin-bottom:10px;line-height:1.4}
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:4/5;cursor:pointer}
+.opt img{width:100%;height:100%;object-fit:cover;display:block}
+.opt .lab{position:absolute;left:8px;bottom:8px;right:8px;display:flex;align-items:center;gap:6px}
+.opt .lab .key{width:22px;height:22px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.opt .lab .tx{background:rgba(20,22,28,.62);color:#fff;font-size:11px;padding:3px 8px;border-radius:8px;backdrop-filter:blur(4px)}
+.opt .bub{position:absolute;top:8px;right:8px;background:rgba(20,22,28,.55);color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;backdrop-filter:blur(4px)}
+.key-a{background:var(--o)}.key-b{background:var(--b)}.key-c{background:#8A63E8}.key-d{background:#12A594}
+.poll-foot{display:flex;align-items:center;gap:14px;margin-top:11px;font-size:12px;color:var(--sub)}
+.poll-foot .bar{flex:1;height:6px;border-radius:99px;background:#F0EDE5;overflow:hidden;display:flex}
+.poll-foot .bar i{display:block;height:100%}
+.mini-btn{margin-left:auto;font-size:12px;color:#fff;background:var(--ink);border:none;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:600}
+/* tabbar */
+.tabbar{height:62px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;padding-bottom:6px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--faint);font-size:10px;width:56px;padding:6px 0}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--ink);font-weight:700}
+.tab-mid{width:44px;height:44px;border-radius:16px;background:var(--ink);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(32,36,44,.25);margin-top:-12px}
+.tab-mid svg{width:22px;height:22px}
+.homeind{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:120px;height:4px;border-radius:99px;background:#D5D9E0}
+/* 详情页 */
+.detail{position:absolute;inset:0;background:var(--bg);z-index:20;display:flex;flex-direction:column;overflow-y:auto}
+.detail-top{display:flex;align-items:center;gap:10px;padding:8px 14px}
+.detail-top .nm{font-size:14px;font-weight:700}
+.detail-top .tm{font-size:11px;color:var(--faint)}
+.stage-img{position:relative;margin:0 14px;border-radius:20px;overflow:hidden;flex:1;min-height:0;background:#1A1D24}
+.stage-img img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;transition:opacity .25s}
+.stage-img .ctl{position:absolute;left:12px;bottom:12px;display:flex;gap:8px}
+.stage-img .ctl button{border:1px solid rgba(255,255,255,.4);background:rgba(20,22,28,.5);color:#fff;padding:6px 12px;border-radius:999px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)}
+.stage-img .ctl button.on{background:#fff;color:var(--ink);border-color:#fff;font-weight:700}
+.rail{position:absolute;right:12px;bottom:16px;display:flex;flex-direction:column;gap:16px;align-items:center}
+.rail button{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff;font-size:10px}
+.rail .rb{width:42px;height:42px;border-radius:50%;background:rgba(20,22,28,.45);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.rail svg{width:20px;height:20px}
+.detail-body{padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px}
+.q-title{font-size:17px;font-weight:800;line-height:1.4}
+.vote-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vote-btn{display:flex;align-items:center;gap:8px;padding:13px 12px;border-radius:14px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:13px;font-weight:700;transition:all .18s;position:relative;overflow:hidden}
+.vote-btn .k{width:26px;height:26px;border-radius:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.vote-btn .pct{margin-left:auto;font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+.vote-btn .fill{position:absolute;inset:0;opacity:.12;transition:width .6s ease;border-radius:0}
+.vote-btn.voted{border-color:transparent;background:#fff;box-shadow:0 4px 14px rgba(32,36,44,.10)}
+.vote-btn.done{cursor:default}
+.same-line{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub);padding:2px 2px 0}
+.same-line b{color:var(--ok)}
+.cmt-input{display:flex;gap:10px;align-items:center;padding:10px 0 4px}
+.cmt-input input{flex:1;height:40px;border:1px solid var(--line);border-radius:999px;padding:0 16px;font-size:13px;background:#fff;outline:none}
+.cmt-input .send{width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cmt-input .mic{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--line);color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cmt-list{display:flex;flex-direction:column;gap:10px;max-height:0;overflow:hidden;transition:max-height .4s ease}
+.cmt-list.open{max-height:260px;overflow-y:auto}
+.cmt{display:flex;gap:8px;align-items:flex-start;background:#fff;border-radius:14px;padding:9px 11px;border:1px solid var(--line)}
+.cmt .c-body{font-size:12.5px;line-height:1.5;color:#3A3F49}
+.cmt .c-body b{font-size:12px;display:block;color:var(--sub);margin-bottom:2px}
+.settle-btn{display:block;width:100%;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:14px;font-size:15px;font-weight:800;cursor:pointer}
+/* 结果/回音 */
+.hero-num{display:flex;gap:0;align-items:center;border-radius:20px;overflow:hidden;height:14px;margin:6px 0 4px}
+.hero-num i{height:100%}
+.result-card{margin:12px 16px}
+.big-num{font-size:34px;font-weight:800;line-height:1}
+.sec-t{font-size:13px;font-weight:800;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.echo-preview{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.echo-preview .ep-head{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.echo-preview .ep-body{position:relative;height:210px}
+.echo-preview .ep-body img{width:100%;height:100%;object-fit:cover;display:block}
+.echo-preview .ep-foot{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-size:12px;color:var(--sub)}
+.echo-card{border-radius:18px;padding:18px;color:#fff;background:linear-gradient(120deg,var(--o),var(--b));margin:12px 16px}
+.echo-card .big{font-size:16px;font-weight:800;line-height:1.5;color:#fff;margin-bottom:8px}
+.echo-card .sub{font-size:12px;color:rgba(255,255,255,.85);line-height:1.6}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:11.5px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);cursor:pointer;color:#3A3F49}
+.chip.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* 抛题 */
+.stepper{display:flex;gap:8px;padding:10px 16px 4px}
+.step{flex:1;height:5px;border-radius:99px;background:var(--line)}
+.step.on{background:var(--ink)}
+.step.done{background:var(--o)}
+.form-sec{padding:6px 16px}
+.form-label{font-size:13px;font-weight:700;margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pick{border-radius:12px;overflow:hidden;aspect-ratio:1;border:2.5px solid transparent;cursor:pointer;position:relative}
+.pick img{width:100%;height:100%;object-fit:cover;display:block}
+.pick.sel{border-color:var(--o)}
+.pick .no{position:absolute;top:5px;left:5px;width:20px;height:20px;border-radius:7px;background:rgba(20,22,28,.6);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.assign{display:flex;gap:10px;margin-top:10px}
+.assign .a-opt{flex:1;border-radius:14px;padding:10px;background:#fff;border:1.5px solid var(--line);text-align:center}
+.assign .a-opt img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;margin-bottom:6px}
+.assign .a-opt .k{font-size:12px;font-weight:800}
+.opt-name{flex:1;height:38px;border:1px solid var(--line);border-radius:12px;padding:0 12px;font-size:13px;background:#fff;outline:none;min-width:0}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{font-size:12.5px;padding:9px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;cursor:pointer;color:#3A3F49}
+.seg button.sel{border-color:var(--ink);background:var(--ink);color:#fff;font-weight:700}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}
+.switch-row .tx b{font-size:14px;display:block}
+.switch-row .tx span{font-size:11px;color:var(--sub)}
+.sw{width:46px;height:26px;border-radius:99px;background:#D9DCE2;border:none;cursor:pointer;position:relative;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+.sw.on{background:var(--ok)}.sw.on::after{left:23px}
+.pub-btn{display:block;width:calc(100% - 32px);margin:16px;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;cursor:pointer}
+/* 我的 */
+.me-hero{display:flex;align-items:center;gap:14px;padding:16px}
+.me-hero .nm{font-size:19px;font-weight:800}
+.me-hero .id{font-size:12px;color:var(--sub);margin-top:3px}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:4px 16px 8px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 4px;text-align:center}
+.stat b{font-size:18px;display:block}
+.stat span{font-size:10.5px;color:var(--sub)}
+.persona{margin:8px 16px;display:flex;gap:10px;align-items:center;background:linear-gradient(120deg,#FFF3EA,#EEF1FF);border-radius:18px;padding:14px}
+.persona .p-ic{width:44px;height:44px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.07)}
+.persona b{font-size:15px;display:block}
+.persona span{font-size:11.5px;color:#5C6270;line-height:1.5;display:block;margin-top:2px}
+.list-item{display:flex;align-items:center;gap:11px;padding:13px 16px;background:#fff;border-bottom:1px solid var(--line);cursor:pointer}
+.list-item:first-child{border-radius:16px 16px 0 0}
+.list-item:last-child{border-radius:0 0 16px 16px;border-bottom:none}
+.list-item .t{font-size:13.5px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.map-card{padding:18px 16px}
+.map-card svg{width:100%;height:auto;display:block}
+.map-note{font-size:11px;color:var(--faint);margin-top:10px;text-align:center}
+/* toast */
+.toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:rgba(28,30,38,.94);color:#fff;font-size:13px;padding:11px 20px;border-radius:999px;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:85%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(4px)}
+/* 响应式 */
+@media (max-width:520px){
+  .stage{padding:0;gap:0;min-height:100vh}
+  .deck{display:none}
+  .phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none;padding:0}
+  .screen{border-radius:0}
+}
+</style>
+</head>
+<body>
+<div style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <img src="assets/luosifen.jpg" alt=""><img src="assets/salad.jpg" alt=""><img src="assets/hoodie.jpg" alt=""><img src="assets/knit.jpg" alt=""><img src="assets/dog.jpg" alt=""><img src="assets/cat.jpg" alt=""><img src="assets/tower.jpg" alt=""><img src="assets/startup.jpg" alt="">
+</div>
+<div class="stage">
+  <aside class="deck">
+    <div class="logo"><span class="dot" style="background:var(--o)"></span><span class="dot" style="background:var(--b)"></span>选回声</div>
+    <h2>选不出来？抛给朋友。</h2>
+    <p>面向选择困难症的轻社交 App 可交互原型。橙色 = 选项 A，蓝色 = 选项 B，两者对撞就是本产品的视觉符号。</p>
+    <div class="steps">
+      <div><b>01</b>首页点任意卡片，帮朋友投一票</div>
+      <div><b>02</b>点下方加号，发布你自己的选择题</div>
+      <div><b>03</b>打开自己发布的题，落槌并发出回音</div>
+      <div><b>04</b>「我的」页查看选择人格与帮选战绩</div>
+    </div>
+    <div class="tag">示例素材均来自公开搜索，仅作原型占位</div>
+  </aside>
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span>9:41</span>
+        <svg width="70" height="14" viewBox="0 0 70 14" fill="none"><rect x="0" y="2.5" width="42" height="9" rx="2.5" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="2" y="4.5" width="30" height="5" rx="1" fill="currentColor"/><path d="M47 4.2c1.6 1 1.6 4.6 0 5.6M52 2.6c3.2 2 3.2 6.8 0 8.8M57 1c4.8 3 4.8 9 0 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="64" cy="7" r="3.4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      </div>
+      <main class="app" id="app"></main>
+      <nav class="tabbar" id="tabbar">
+        <button class="tab" data-tab="#home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>首页</button>
+        <button class="tab" data-tab="#square"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>广场</button>
+        <button class="tab-mid" data-tab="#create"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="tab" data-tab="#messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-5 4z"/></svg>消息</button>
+        <button class="tab" data-tab="#me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1.5-3.4 4.3-5 7.5-5s6 1.6 7.5 5"/></svg>我的</button>
+      </nav>
+      <div class="homeind"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ 数据 ============ */
+const A={luosifen:'assets/luosifen.jpg',salad:'assets/salad.jpg',hoodie:'assets/hoodie.jpg',knit:'assets/knit.jpg',dog:'assets/dog.jpg',cat:'assets/cat.jpg',tower:'assets/tower.jpg',startup:'assets/startup.jpg'};
+const PICK_LIST=[{k:'luosifen',n:'螺蛳粉'},{k:'salad',n:'轻食沙拉'},{k:'hoodie',n:'灰色卫衣'},{k:'knit',n:'藏青针织'},{k:'dog',n:'戴花环柯基'},{k:'cat',n:'卡通橘猫'},{k:'tower',n:'写字楼'},{k:'startup',n:'创业办公室'}];
+const ME={name:'小屿',persona:'稳妥派',personaDesc:'62% 稳妥派 · 25% 冒险王 · 你帮选时偏爱不踩雷的那一个',friends:[{n:'阿哲',c:'#FF7A3D'},{n:'小周',c:'#2F5CFF'},{n:'大头',c:'#8A63E8'},{n:'莉莉',c:'#12A594'}]};
+const INIT=[
+ {id:'p1',author:'阿哲',time:'21:07',title:'明天中午吃什么？',mode:'normal',scope:'全部好友',deadline:'剩 2 小时',
+  opts:[{key:'A',label:'螺蛳粉',img:'luosifen'},{key:'B',label:'轻食沙拉',img:'salad'}],votes:{A:5,B:3},total:8,status:'voting',picked:null,echoed:false,
+  comments:[{u:'小周',t:'A 一天不嗦粉浑身难受'}]},
+ {id:'p2',author:'小周',time:'19:12',title:'这两件卫衣留哪件？',mode:'normal',scope:'全部好友',deadline:'剩 5 小时',
+  opts:[{key:'A',label:'灰色 oversize',img:'hoodie'},{key:'B',label:'藏青针织',img:'knit'}],votes:{A:3,B:2},total:5,status:'voting',picked:null,echoed:false,
+  comments:[{u:'阿哲',t:'A 百搭，穿三年不过时'},{u:'莉莉',t:'B 更有质感，显白'}]},
+ {id:'p3',author:'大头',time:'昨天',title:'新头像用哪个？',mode:'normal',scope:'全部好友',deadline:'已截止',
+  opts:[{key:'A',label:'戴花环柯基',img:'dog'},{key:'B',label:'卡通橘猫',img:'cat'}],votes:{A:9,B:3},total:12,status:'settled',picked:'A',echoed:true,echoText:'听大家的，柯基花环拿下',
+  comments:[{u:'小屿',t:'A 太可爱了，选它！'}]},
+ {id:'p4',author:'莉莉',time:'13:20',title:'两个实习 offer 选哪个？',mode:'deep',scope:'指定 5 位好友',deadline:'剩 6 小时',
+  opts:[{key:'A',label:'大厂运营',img:'tower'},{key:'B',label:'创业增长',img:'startup'}],votes:{A:2,B:3},total:5,status:'voting',picked:null,echoed:false,
+  comments:[{u:'阿哲',t:'B 成长空间更大，语音说了些细节，点我头像听'}]}
+];
+let S={voted:{},polls:JSON.parse(JSON.stringify(INIT)),mine:[],echoes:{},toasts:0};
+const $app=document.getElementById('app');
+
+/* ============ 工具 ============ */
+function fmtV(p){return Object.values(p.votes).reduce((a,b)=>a+b,0)}
+function pct(p,k){const t=fmtV(p);return t?Math.round(p.votes[k]/t*100):0}
+function voteKey(k){return k==='A'?'key-a':k==='B'?'key-b':k==='C'?'key-c':'key-d'}
+function avatar(n,c,sz){return `<div class="avatar" style="background:${c||'#333'};width:${sz||40}px;height:${sz||40}px;font-size:${sz?sz*.37:15}px">${n.slice(0,1)}</div>`}
+function pollById(id){return S.polls.find(p=>p.id===id)}
+function isMine(id){return S.mine.includes(id)}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(S.toasts);S.toasts=setTimeout(()=>t.classList.remove('show'),1800)}
+function go(h){location.hash=h}
+function statusPill(p){
+  if(p.status==='settled')return `<span class="pill g">已落槌${p.echoed?'· 已回音':''}</span>`;
+  if(isMine(p.id))return `<span class="pill o">我的题 · 待落槌</span>`;
+  return `<span class="pill gy">投票中 · ${p.deadline}</span>`;
+}
+
+/* ============ 视图 ============ */
+function vHome(){
+  const doneMe=S.mine.map(id=>pollById(id));
+  const list=[...doneMe.filter(Boolean),...S.polls.filter(p=>!isMine(p.id))];
+  const cards=list.map(p=>`
+    <div class="card poll-card" onclick="go('#feed/${p.id}')">
+      <div class="poll-head">${avatar(p.author,'','')}<div><div class="nm">${p.author}</div><div class="tm">${p.time} · ${p.scope}</div></div>${statusPill(p)}</div>
+      <div class="poll-title">${p.title}</div>
+      <div class="opts2">
+        ${p.opts.map(o=>`<div class="opt"><img src="${A[o.img]}" alt="${o.label}"><span class="bub">${o.key}</span><span class="lab"><span class="key ${voteKey(o.key)}">${o.key}</span><span class="tx">${o.label}</span></span></div>`).join('')}
+      </div>
+      <div class="poll-foot">
+        <span>${fmtV(p)} 人已投</span>
+        <span class="bar">${p.opts.map(o=>`<i style="width:${pct(p,o.key)}%;background:${o.key==='A'?'var(--o)':'var(--b)'}"></i>`).join('')}</span>
+        ${S.voted[p.id]?`<b style="color:var(--ok);font-size:11px">已选 ${S.voted[p.id]}</b>`:''}
+        ${p.mode==='deep'?`<span class="pill dp">深度模式</span>`:''}
+      </div>
+    </div>`).join('');
+  return `
+    <div class="topbar">
+      <div class="t">选回声</div>
+      <div class="icons">
+        <button class="icon-btn" onclick="go('#me')" aria-label="我的"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20c1.5-3.4 4.3-5 7.5-5s6 1.6 7.5 5"/></svg></button>
+        <button class="icon-btn" onclick="go('#messages')" aria-label="消息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-5 4z"/><path d="M8 10h8M8 13h5"/></svg></button>
+      </div>
+    </div>
+    <div class="greet"><div class="g"><b>晚上好，小屿</b><span>今天有 ${S.polls.filter(p=>!isMine(p.id)&&p.status==='voting').length} 道题等你帮选</span></div>${avatar(ME.name,'#20242C')}</div>
+    <div class="daily" onclick="go('#feed/daily')">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--o)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M8 3v3.5C8 9 5.5 10 5.5 13c0 4 3 7 6.5 7s6.5-3 6.5-7c0-3-2.5-4-2.5-6.5V3"/></svg></div>
+      <div style="flex:1"><b>每日一题 · 今天喝奶茶还是咖啡？</b><span>8,214 人已参与 · 官方发起</span></div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+    </div>
+    <div class="pad" style="padding-bottom:14px">${cards||`<div class="card" style="text-align:center;color:var(--sub);padding:40px 0">还没有好友抛题，去发第一道题吧</div>`}</div>`;
+}
+function vFeed(id){
+  const p=pollById(id);
+  if(!p)return `<div class="pad" style="padding-top:80px;text-align:center">题目不存在<br><button class="mini-btn" style="margin:20px auto" onclick="go('#home')">回首页</button></div>`;
+  if(id==='daily')return vDaily();
+  const mine=isMine(p.id), voted=S.voted[p.id];
+  const imgA=A[p.opts[0].img], imgB=A[p.opts[1].img];
+  const myVotePct=voted?pct(p,voted):0;
+  const sameCount=Math.max(0,p.votes[voted||'A']-1);
+  const cms=p.comments||[];
+  return `
+  <div class="detail">
+    <div class="detail-top">
+      <button class="icon-btn" onclick="go('#home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      ${avatar(p.author,'','34')}
+      <div style="flex:1"><div class="nm">${p.author}${p.mode==='deep'?' · <span style="color:var(--sub);font-size:11px">深度模式 · 语音可回</span>':''}</div><div class="tm">${p.time} · ${p.scope} · ${p.deadline}</div></div>
+      ${mine?'<span class="pill o">我的题</span>':''}
+    </div>
+    <div class="stage-img">
+      <img id="stageImg" src="${imgA}" alt="${p.opts[0].label}">
+      <div class="ctl" id="stageCtl">
+        ${p.opts.map(o=>`<button class="${voted===o.key?'on':''}" data-k="${o.key}" onclick="switchStage('${p.id}','${o.key}')">${o.key} · ${o.label}</button>`).join('')}
+      </div>
+      <div class="rail">
+        <button onclick="S.like=S.like||{};S.like['${p.id}']=!S.like['${p.id}'];toast(S.like['${p.id}']?'已点个赞支持':'已取消');this.firstElementChild.style.background=S.like['${p.id}']?'rgba(255,122,61,.85)':'rgba(20,22,28,.45)'"><span class="rb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21C12 21 4 14.5 4 9.5 4 6.5 6.5 4.5 9 4.5c1.2 0 2.3.5 3 1.3.7-.8 1.8-1.3 3-1.3 2.5 0 5 2 5 5 0 5-8 11.5-8 11.5Z"/></svg></span>帮选</button>
+        <button onclick="document.getElementById('cmtBox').focus()"><span class="rb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v11H9l-5 4z"/></svg></span>评论</button>
+        <button onclick="toast('已转发给好友')"><span class="rb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7h16v-7M12 3v12M7 8l5-5 5 5"/></svg></span>转发</button>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="q-title">${p.title}</div>
+      ${p.status==='settled'?`<div class="same-line" style="background:#EAF7F0;border:1px solid #CDEBDD;border-radius:12px;padding:10px 12px">已落槌：${p.author} 选了 <b style="color:var(--ok)">${p.picked}</b>${p.echoed?` · ${p.echoText}`:''}</div>`:''}
+      <div class="vote-row">
+        ${p.opts.map(o=>{const vt=pct(p,o.key);const col=o.key==='A'?'var(--o)':'var(--b)';const chosen=S.voted[p.id]===o.key;const disabled=p.status==='settled'||!!S.voted[p.id];
+        return `<button class="vote-btn ${chosen?'voted':''} ${disabled&&!chosen?'done':''}" onclick="${disabled?'':'vote(\''+p.id+'\',\''+o.key+'\')'}" style="${chosen?'border-color:'+col:''}">
+          <span class="fill" style="background:${col};width:${vt}%"></span>
+          <span class="k ${voteKey(o.key)}" style="background:${col}">${o.key}</span>
+          <span>${o.label}</span><span class="pct">${vt}%</span></button>`}).join('')}
+      </div>
+      <div class="same-line" id="sameLine">
+        ${voted?`<svg width="14" height="14" viewBox="0 0 24 24" fill="var(--ok)"><path d="M12 2 15 9l7 .5-5.3 4.6L18.6 21 12 17 5.4 21l1.9-6.9L2 9.5 9 9z"/></svg>你和 <b>${sameCount} 位朋友</b>选了同一项${sameCount>=2?'，英雄所见略同':''}`:`<span style="color:var(--faint)">投一票，看看朋友怎么选</span>`}
+      </div>
+      ${!voted&&p.status!=='settled'&&!mine?`<div style="text-align:center;font-size:11.5px;color:var(--faint)">投票匿名，评论实名 · 点选项即投</div>`:''}
+      <div class="cmt-input">
+        <input id="cmtBox" placeholder="${p.mode==='deep'?'写下理由，或按住语音回复…':'写句建议（会实名显示）…'}" onkeydown="if(event.key==='Enter')addCmt('${p.id}')">
+        ${p.mode==='deep'?`<button class="mic" onclick="toast('录音中…原型演示）')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>`:''}
+        <button class="send" onclick="addCmt('${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-6-4 1 2-5z"/></svg></button>
+      </div>
+      <div class="cmt-list ${cms.length?'open':''}">
+        ${cms.map(c=>`<div class="cmt">${avatar(c.u,ME.friends.find(f=>f.n===c.u)?.c||'#555','28')}<div class="c-body"><b>${c.u}</b>${c.t}</div></div>`).join('')}
+      </div>
+      ${mine&&p.status==='voting'?`<button class="settle-btn" onclick="go('#result/${p.id}')">查看票数 · 落槌定音</button>`:''}
+      ${p.status==='settled'&&p.echoed?`<button class="settle-btn" style="background:var(--ok)" onclick="go('#echo/${p.id}')">查看回音</button>`:''}
+    </div>
+  </div>`;
+}
+function vDaily(){
+  return `
+  <div class="detail">
+    <div class="detail-top"><button class="icon-btn" onclick="go('#home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div style="flex:1"><div class="nm">选回声官方</div><div class="tm">每日一题 · 8,214 人已参与</div></div></div>
+    <div class="stage-img">
+      <img id="stageImg" src="${A.tower}" alt="奶茶或咖啡">
+      <div class="ctl"><button class="on">A · 奶茶</button><button>B · 咖啡</button></div>
+    </div>
+    <div class="detail-body">
+      <div class="q-title">今天下午茶：奶茶还是咖啡？</div>
+      <div class="vote-row">
+        <button class="vote-btn" onclick="voteDaily('A')"><span class="fill" style="background:var(--o);width:56%"></span><span class="k key-a" style="background:var(--o)">A</span><span>奶茶</span><span class="pct">56%</span></button>
+        <button class="vote-btn" onclick="voteDaily('B')"><span class="fill" style="background:var(--b);width:44%"></span><span class="k key-b" style="background:var(--b)">B</span><span>咖啡</span><span class="pct">44%</span></button>
+      </div>
+      <div class="same-line"><span style="color:var(--faint)">投完即可解锁今日热榜排名</span></div>
+    </div>
+  </div>`;
+}
+function vResult(id){
+  const p=pollById(id);
+  if(!p)return '';
+  const voted=S.voted[p.id];
+  const agrees=voted?p.votes[p.picked??voted]-(voted===(p.picked??voted)?1:0):p.votes[p.picked??'A'];
+  return `
+  <div class="detail">
+    <div class="detail-top"><button class="icon-btn" onclick="go('#feed/${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div style="flex:1"><div class="nm">${p.title}</div><div class="tm">${fmtV(p)} 人已投 · 你是发布者</div></div></div>
+    <div class="result-card card">
+      <div class="hero-num"><i style="width:${pct(p,'A')}%;background:var(--o)"></i><i style="width:${pct(p,'B')}%;background:var(--b)"></i></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin:8px 0 4px"><span>A · ${p.opts[0].label} · ${p.votes.A} 票</span><span>${p.opts[1].label} · ${p.votes.B} 票 · B</span></div>
+      <div class="sec-t"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 15 9l7 .5-5.3 4.6L18.6 21 12 17 5.4 21l1.9-6.9L2 9.5 9 9z"/></svg>评论精选</div>
+      ${(p.comments||[]).slice(0,2).map(c=>`<div class="cmt" style="margin-bottom:8px">${avatar(c.u,'','28')}<div class="c-body"><b>${c.u}</b>${c.t}</div></div>`).join('')||'<div class="muted">还没有评论</div>'}
+      <div class="sec-t">落槌定音</div>
+      <div class="opts2" style="margin-bottom:12px">
+        ${p.opts.map(o=>`<button class="vote-btn" onclick="settle('${p.id}','${o.key}')" style="width:100%;justify-content:center;border:1.5px solid ${o.key==='A'?'var(--o)':'var(--b)'}"><span class="k ${voteKey(o.key)}" style="background:${o.key==='A'?'var(--o)':'var(--b)'}">${o.key}</span>${o.label} · 定为最终答案</button>`).join('')}
+      </div>
+      ${voted?`<div class="same-line">你投了 <b>${voted}</b>，若最终与多数一致，将收获「神队友」战绩</div>`:''}
+    </div>
+  </div>`;
+}
+function vEcho(id){
+  const p=pollById(id);
+  if(!p)return '';
+  const picked=p.picked||'A';
+  const pickedOpt=p.opts.find(o=>o.key===picked);
+  return `
+  <div class="detail">
+    <div class="detail-top"><button class="icon-btn" onclick="go('#feed/${p.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div style="flex:1"><div class="nm">发出回音</div><div class="tm">让帮你的朋友知道结果</div></div></div>
+    <div class="echo-preview" style="margin:12px 16px">
+      <div class="ep-head">${avatar(p.author,'','34')}<div><div class="nm" style="font-size:13px">${p.author} 选了 <b style="color:${picked==='A'?'var(--o)':'var(--b)'}">${picked}</b></div><div class="tm">回音卡片预览</div></div></div>
+      <div class="ep-body"><img id="echoImg" src="${A[pickedOpt.img]}" alt="${pickedOpt.label}"></div>
+      <div class="ep-foot"><span id="echoStat">${fmtV(p)} 位朋友投票 · 选对 ${Math.max(0,p.votes[picked]-1)} 位</span><button class="mini-btn" onclick="publishEcho('${p.id}')">发布回音</button></div>
+    </div>
+    <div class="form-sec">
+      <div class="form-label">配上结果（选填）</div>
+      <input class="opt-name" style="width:100%;height:44px" id="echoText" placeholder="比如：听大家的，就它了！" value="${p.echoText||''}">
+      <div class="form-label">换一张回音图（原型可换）</div>
+      <div class="pick-grid">
+        ${p.opts.map(o=>`<div class="pick ${o.key===picked?'sel':''}" onclick="switchEchoImg('${p.id}','${o.key}')"><img src="${A[o.img]}" alt="${o.label}"><span class="no">${o.key}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+function vCreate(){
+  const step=S.cs||1;
+  const sel=S.csSel||[];
+  const assign=S.csAssign||{A:null,B:null};
+  const body=step===1?`
+    <div class="form-sec">
+      <div class="form-label">选内容 · 想让大家看什么？（原型：从素材库挑 2 张）</div>
+      <div class="pick-grid">
+        ${PICK_LIST.map((it,i)=>`<div class="pick ${sel.includes(it.k)?'sel':''}" onclick="togglePick('${it.k}')"><img src="${A[it.k]}" alt="${it.n}"><span class="no">${sel.indexOf(it.k)+1||''}</span></div>`).join('')}
+      </div>
+      <div class="same-line" style="padding:8px 2px">已选 ${sel.length} 张（至少 2 张进入选项）</div>
+      <button class="pub-btn" style="margin:14px 0" onclick="${sel.length>=2?'nextStep(2)':'toast(\'至少选 2 张\')'}">下一步：分配选项</button>
+    </div>`:step===2?`
+    <div class="form-sec">
+      <div class="form-label">分配选项 A / B</div>
+      <div class="assign">
+        ${['A','B'].map(k=>`<div class="a-opt" style="border-color:${assign[k]?(k==='A'?'var(--o)':'var(--b)'):'var(--line)'}">
+          <div class="k" style="color:${k==='A'?'var(--o)':'var(--b)'}">${k}</div>
+          ${assign[k]?`<img src="${A[assign[k]]}" alt="">`:''}
+          <input class="opt-name" style="margin-top:8px;width:100%" value="${S.csNames?.[k]||''}" placeholder="${k==='A'?'选项 A 名称':'选项 B 名称'}" oninput="setName('${k}',this.value)">
+        </div>`).join('')}
+      </div>
+      <button class="pub-btn" style="margin:14px 0" onclick="nextStep(3)">下一步：设置可见范围</button>
+    </div>`
+    :`
+    <div class="form-sec">
+      <div class="form-label">谁可以看到这道题？</div>
+      <div class="seg" id="segScope">
+        ${[['friends','全部好友'],['spec','指定好友'],['public','公开广场']].map(s=>`<button class="${(S.csScope||'friends')===s[0]?'sel':''}" onclick="setScope('${s[0]}')">${s[1]}</button>`).join('')}
+      </div>
+      ${S.csScope==='spec'?`<div class="seg" style="margin-top:10px">${ME.friends.map(f=>`<button class="${(S.csSpec||[]).includes(f.n)?'sel':''}" onclick="toggleSpec('${f.n}')">${f.n}</button>`).join('')}</div>`:''}
+      <div class="form-label">截止时间</div>
+      <div class="seg" id="segDead">
+        ${[['1h','1 小时'],['6h','6 小时'],['24h','24 小时'],['0','不截止']].map(d=>`<button class="${(S.csDead||'24h')===d[0]?'sel':''}" onclick="setDead('${d[0]}')">${d[1]}</button>`).join('')}
+      </div>
+      <div class="switch-row">
+        <div class="tx"><b>盲选模式</b><span>朋友看不到题目，只看画面凭直觉选</span></div>
+        <button class="sw ${S.csBlind?'on':''}" onclick="S.csBlind=!S.csBlind;render()" aria-label="盲选开关"></button>
+      </div>
+      <div class="switch-row" style="border-bottom:none">
+        <div class="tx"><b>深度模式（P1）</b><span>重决策场景：仅限指定好友，支持语音回复</span></div>
+        <button class="sw ${S.csDeep?'on':''}" onclick="S.csDeep=!S.csDeep;render()" aria-label="深度模式开关"></button>
+      </div>
+      <button class="pub-btn" style="margin:18px 0" onclick="publish()">发布这道题</button>
+    </div>`;
+  return `
+  <div class="topbar">
+    <button class="icon-btn" onclick="${step>1?'prevStep()':'go(\'#home\')'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="t">抛一道题</div>
+    <span style="font-size:12px;color:var(--sub)">${step}/3</span>
+  </div>
+  <div class="stepper">${[1,2,3].map(i=>`<div class="step ${i<step?'done':i===step?'on':''}"></div>`).join('')}</div>
+  ${body}`;
+}
+function vSquare(){
+  const hot=[{t:'周末去哪？广州塔还是沙面',a:'咖啡',v:3124},{t:'两双鞋留哪双？',a:'大头',v:2877},{t:'今晚加不加班？',a:'匿名',v:1980}];
+  return `
+  <div class="topbar"><div class="t">广场</div><span class="pill gy">热门选择题</span></div>
+  <div class="daily" style="margin-top:6px" onclick="go('#feed/daily')">
+    <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--o)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M8 3v3.5C8 9 5.5 10 5.5 13c0 4 3 7 6.5 7s6.5-3 6.5-7c0-3-2.5-4-2.5-6.5V3"/></svg></div>
+    <div style="flex:1"><b>每日一题 · 今天喝奶茶还是咖啡？</b><span>8,214 人已参与</span></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+  </div>
+  <div class="pad" style="padding-bottom:16px">
+    ${hot.map(h=>`<div class="card poll-card" style="margin:0 0 10px" onclick="toast('广场题：${h.t}')">
+      <div class="poll-head">${avatar(h.a,'#8A63E8')}<div><div class="nm">${h.a}</div><div class="tm">广场 · 公开</div></div><span class="pill gy">${h.v} 热度</span></div>
+      <div class="poll-title">${h.t}</div>
+      <div class="same-line" style="color:var(--faint)">围观 · 投票匿名 · 可转发</div>
+    </div>`).join('')}
+  </div>`;
+}
+function vMessages(){
+  const todo=S.polls.filter(p=>!isMine(p.id)&&p.status==='voting'&&!S.voted[p.id]);
+  const echoes=S.polls.filter(p=>p.status==='settled');
+  return `
+  <div class="topbar"><div class="t">消息</div><span class="pill gy">${todo.length} 条待帮选</span></div>
+  <div class="sec-t" style="padding:6px 18px 0">等你帮选</div>
+  <div class="pad" style="padding-bottom:8px">
+    ${todo.map(p=>`<div class="card poll-card" style="margin:0 0 10px" onclick="go('#feed/${p.id}')">
+      <div class="poll-head">${avatar(p.author,'','36')}<div><div class="nm">${p.author} 等你选</div><div class="tm">${p.title} · ${p.deadline}</div></div><span class="pill o">去投票</span></div>
+    </div>`).join('')||'<div class="card" style="text-align:center;color:var(--sub);padding:30px">都选完了，真棒</div>'}
+  </div>
+  <div class="sec-t" style="padding:6px 18px 0">回音与结果</div>
+  <div class="pad" style="padding-bottom:16px">
+    ${echoes.map(p=>`<div class="card poll-card" style="margin:0 0 10px" onclick="go('#echo/${p.id}')">
+      <div class="poll-head">${avatar(p.author,'','36')}<div><div class="nm">${p.author} 发来回音</div><div class="tm">${p.title} · 选了 ${p.picked}${p.echoText?' · '+p.echoText:''}</div></div><span class="pill g">已回音</span></div>
+    </div>`).join('')}
+    <div class="card poll-card" style="margin:0 0 10px;background:#F4F8FF;border-color:#DCE6FF" onclick="go('#me')">
+      <div class="poll-head">${avatar('系统','#2F5CFF','36')}<div><div class="nm">神队友时刻</div><div class="tm">你上个月帮选了 86 次，对了 61 次</div></div></div>
+    </div>
+  </div>`;
+}
+function vMe(){
+  const mine=S.mine.map(id=>pollById(id)).filter(Boolean);
+  return `
+  <div class="topbar"><div class="t">我的</div><button class="icon-btn" onclick="go('#map')"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg></button></div>
+  <div class="me-hero">${avatar(ME.name,'#20242C','52')}<div><div class="nm">${ME.name}</div><div class="id">选择困难轻症 · 帮选积极分子</div></div></div>
+  <div class="stat-row">
+    <div class="stat"><b>12</b><span>我抛的题</span></div>
+    <div class="stat"><b>86</b><span>我帮的选</span></div>
+    <div class="stat"><b>61</b><span>神队友</span></div>
+    <div class="stat"><b>8</b><span>军师徽章</span></div>
+  </div>
+  <div class="persona">
+    <div class="p-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--o)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 2.5 6 2.5 6H3.5S6 13 6 9zM10 19a2.2 2.2 0 0 0 4 0"/></svg></div>
+    <div><b>我的选择人格 · 稳妥派</b><span>${ME.personaDesc}</span></div>
+    <button class="mini-btn" style="margin-left:auto" onclick="toast('人格卡片已生成，可分享到微信')">分享</button>
+  </div>
+  <div class="sec-t" style="padding:14px 18px 0">我抛的题</div>
+  <div class="pad" style="padding-bottom:8px">
+    ${mine.map(p=>`<div class="card poll-card" style="margin:0 0 10px" onclick="go('#feed/${p.id}')">
+      <div class="poll-head">${avatar(p.author,'','36')}<div><div class="nm">${p.title}</div><div class="tm">${fmtV(p)} 人已投</div></div>${statusPill(p)}</div>
+    </div>`).join('')||`<div class="card" style="text-align:center;color:var(--sub);padding:26px">还没抛过题<br><button class="mini-btn" style="margin:14px auto" onclick="go('#create')">抛第一道题</button></div>`}
+  </div>
+  <div class="sec-t" style="padding:14px 18px 0">选友匹配</div>
+  <div class="pad" style="padding-bottom:16px">
+    <div class="card" style="display:flex;align-items:center;gap:10px">
+      ${avatar('阿哲','#FF7A3D','36')}<div style="flex:1"><b style="font-size:13.5px">你和 阿哲 的选择一致度 87%</b><div class="tm muted" style="margin-top:2px">你们连吃什么都想到一块</div></div>
+      <button class="mini-btn" onclick="toast('匹配卡片已生成')">查看</button>
+    </div>
+  </div>`;
+}
+function vMap(){
+  return `
+  <div class="topbar"><button class="icon-btn" onclick="go('#me')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="t">产品地图</div></div>
+  <div class="map-card card" style="margin:10px 16px">
+    <div class="sec-t" style="margin-top:0">核心闭环（北极星：每周完成抛题→回音的用户数）</div>
+    <svg viewBox="0 0 340 120" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#C9C4B6"/></marker></defs>
+      <g font-size="11" font-family="sans-serif" text-anchor="middle">
+        <rect x="8" y="18" width="64" height="34" rx="10" fill="#FFF" stroke="#FF7A3D" stroke-width="1.4"/><text x="40" y="33" fill="#20242C" font-weight="700">抛题</text><text x="40" y="46" fill="#787E8A" font-size="9">10 秒发一道题</text>
+        <rect x="112" y="18" width="64" height="34" rx="10" fill="#FFF" stroke="#2F5CFF" stroke-width="1.4"/><text x="144" y="33" fill="#20242C" font-weight="700">帮选</text><text x="144" y="46" fill="#787E8A" font-size="9">朋友匿名投票</text>
+        <rect x="216" y="18" width="64" height="34" rx="10" fill="#FFF" stroke="#20242C" stroke-width="1.4"/><text x="248" y="33" fill="#20242C" font-weight="700">落槌</text><text x="248" y="46" fill="#787E8A" font-size="9">发布者定答案</text>
+        <rect x="262" y="76" width="64" height="34" rx="10" fill="#FFF" stroke="#18A05E" stroke-width="1.4"/><text x="294" y="91" fill="#20242C" font-weight="700">回音</text><text x="294" y="104" fill="#787E8A" font-size="9">结果反馈朋友</text>
+        <rect x="8" y="76" width="64" height="34" rx="10" fill="#FFF" stroke="#C9C4B6" stroke-width="1.4"/><text x="40" y="91" fill="#20242C" font-weight="700">神队友</text><text x="40" y="104" fill="#787E8A" font-size="9">选对赢战绩</text>
+        <path d="M72 35h34" stroke="#C9C4B6" stroke-width="1.6" marker-end="url(#ar)"/>
+        <path d="M176 35h34" stroke="#C9C4B6" stroke-width="1.6" marker-end="url(#ar)"/>
+        <path d="M248 52c-2 12-6 18-22 20" stroke="#C9C4B6" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+        <path d="M262 82h-26c-10 0-13-6-16-14" stroke="#C9C4B6" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+        <path d="M72 82h84" stroke="#C9C4B6" stroke-width="1.6" marker-end="url(#ar)"/>
+        <path d="M40 76V58" stroke="#C9C4B6" stroke-width="1.6" marker-end="url(#ar)"/>
+      </g>
+    </svg>
+    <div class="map-note">示意 · 闭环靠「回音」沉淀社交资产，否则退化为投票工具</div>
+  </div>
+  <div class="map-card card" style="margin:0 16px 16px">
+    <div class="sec-t" style="margin-top:0">信息架构</div>
+    <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg">
+      <g font-size="11" font-family="sans-serif">
+        <rect x="126" y="8" width="88" height="26" rx="9" fill="#20242C"/><text x="170" y="25" fill="#fff" text-anchor="middle" font-weight="700">选回声</text>
+        <g text-anchor="middle" font-weight="700" fill="#20242C">
+          <rect x="6" y="52" width="74" height="24" rx="8" fill="#FFE9DC" stroke="#FF7A3D"/><text x="43" y="68">首页 · 选场</text>
+          <rect x="90" y="52" width="74" height="24" rx="8" fill="#E4EBFF" stroke="#2F5CFF"/><text x="127" y="68">抛题</text>
+          <rect x="174" y="52" width="74" height="24" rx="8" fill="#EEEAFB" stroke="#8A63E8"/><text x="211" y="68">消息</text>
+          <rect x="258" y="52" width="74" height="24" rx="8" fill="#E2F3EC" stroke="#18A05E"/><text x="295" y="68">我的</text>
+        </g>
+        <g font-size="9.5" fill="#787E8A" text-anchor="middle">
+          <text x="30" y="102">关注流</text><text x="55" y="114">每日一题</text><text x="43" y="126">广场热榜</text>
+          <text x="118" y="102">拍视频</text><text x="130" y="114">2–4 选项</text><text x="127" y="126">可见范围</text>
+          <text x="198" y="102">帮选待办</text><text x="214" y="114">回音通知</text><text x="211" y="126">神队友</text>
+          <text x="284" y="102">我抛的题</text><text x="295" y="114">选择人格</text><text x="295" y="126">选友匹配</text>
+        </g>
+        <path d="M43 52V40M127 52V40M211 52V40M295 52V40" stroke="#C9C4B6" stroke-width="1.4"/>
+      </g>
+    </svg>
+    <div class="map-note">示意 · 社交围绕「选择行为」，不围绕「人」</div>
+  </div>
+  <div class="map-card card" style="margin:0 16px 16px">
+    <div class="sec-t" style="margin-top:0">版本范围</div>
+    <div class="seg" style="flex-direction:column;gap:6px;align-items:stretch">
+      <button style="cursor:default;text-align:left;display:flex;justify-content:space-between;background:#FFF;border-color:#E2F3EC"><span><b style="color:#0E7A4A">P0 MVP</b> · 抛题/投票/落槌/回音</span><span class="pill g">已演示</span></button>
+      <button style="cursor:default;text-align:left;display:flex;justify-content:space-between"><span><b style="color:#7A2BC0">P1</b> · 广场 · 盲选 · 语音评论 · <b>深度模式（重决策）</b></span><span class="pill dp">已演示</span></button>
+      <button style="cursor:default;text-align:left;display:flex;justify-content:space-between"><span><b style="color:var(--sub)">P2</b> · 品牌植入 · 付费代选 · 年度报告</span><span class="pill gy">规划中</span></button>
+    </div>
+  </div>`;
+}
+
+/* ============ 交互 ============ */
+function render(){
+  const h=location.hash||'#home';
+  const tab=h==='#create'?'#create':h;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  if(h.startsWith('#feed/')){$app.innerHTML=vFeed(h.split('/')[1]);return}
+  if(h.startsWith('#result/')){$app.innerHTML=vResult(h.split('/')[1]);return}
+  if(h.startsWith('#echo/')){$app.innerHTML=vEcho(h.split('/')[1]);return}
+  const views={'#home':vHome,'#square':vSquare,'#create':vCreate,'#messages':vMessages,'#me':vMe,'#map':vMap};
+  $app.innerHTML=(views[h]||views['#home'])();
+}
+function switchStage(id,key){const p=pollById(id);const o=p.opts.find(x=>x.key===key);const img=document.getElementById('stageImg');if(img){img.src=A[o.img];document.querySelectorAll('#stageCtl button').forEach(b=>b.classList.toggle('on',b.dataset.k===key))}}
+function switchEchoImg(id,key){const p=pollById(id);const o=p.opts.find(x=>x.key===key);const img=document.getElementById('echoImg');if(img)img.src=A[o.img]}
+function vote(id,key){const p=pollById(id);if(p.status==='settled'||S.voted[id])return;S.voted[id]=key;p.votes[key]=(p.votes[key]||0)+1;p.total=fmtV(p);
+  const btn=event.target.closest('.vote-btn');if(btn){btn.classList.add('voted');const f=btn.querySelector('.fill');f.style.width=pct(p,key)+'%'}
+  const sl=document.getElementById('sameLine');const c=Math.max(0,p.votes[key]-1);
+  if(sl)sl.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="var(--ok)"><path d="M12 2 15 9l7 .5-5.3 4.6L18.6 21 12 17 5.4 21l1.9-6.9L2 9.5 9 9z"/></svg>你和 <b>${c} 位朋友</b>选了同一项${c>=2?'，英雄所见略同':''}`;
+  toast(`已帮 ${p.author} 选了 ${key}（匿名）`);
+  setTimeout(()=>{if((location.hash||'').startsWith('#feed/'))render()},700);
+}
+function voteDaily(key){S.voted.daily=key;toast('已参与每日一题');document.querySelectorAll('.vote-btn').forEach(b=>{b.classList.add('done')});}
+function addCmt(id){const p=pollById(id);const inp=document.getElementById('cmtBox');const v=inp?inp.value.trim():'';if(!v)return toast('先写句建议吧');p.comments=p.comments||[];p.comments.push({u:ME.name,t:v});inp.value='';render();toast('评论已发出（实名）');const l=document.querySelector('.cmt-list');if(l){l.classList.add('open');setTimeout(()=>l.scrollTop=l.scrollHeight,50)}}
+function settle(id,key){const p=pollById(id);p.picked=key;p.status='settled';go('#echo/'+id)}
+function publishEcho(id){const p=pollById(id);const t=document.getElementById('echoText');p.echoText=t?t.value.trim()||'':'';p.echoed=true;toast('回音已发布，好友已收到结果');setTimeout(()=>go('#feed/'+id),900)}
+/* 抛题流程 */
+function togglePick(k){S.cs=S.cs||1;S.csSel=S.csSel||[];const i=S.csSel.indexOf(k);if(i>-1)S.csSel.splice(i,1);else if(S.csSel.length<4)S.csSel.push(k);render()}
+function nextStep(n){if(n===2&&S.csSel&&S.csSel.length>=2){S.csAssign={A:S.csSel[0],B:S.csSel[1]}}S.cs=n;render()}
+function prevStep(){S.cs=Math.max(1,(S.cs||1)-1);render()}
+function setName(k,v){S.csNames=S.csNames||{};S.csNames[k]=v}
+function setScope(s){S.csScope=s;if(s!=='spec')S.csSpec=[];render()}
+function toggleSpec(n){S.csSpec=S.csSpec||[];const i=S.csSpec.indexOf(n);if(i>-1)S.csSpec.splice(i,1);else S.csSpec.push(n);render()}
+function setDead(d){S.csDead=d;render()}
+function publish(){
+  const a=S.csAssign||{A:null,B:null};
+  if(!a.A||!a.B)return toast('请先分配选项 A/B');
+  const nameA=(S.csNames&&S.csNames.A)||PICK_LIST.find(x=>x.k===a.A)?.n||'选项 A';
+  const nameB=(S.csNames&&S.csNames.B)||PICK_LIST.find(x=>x.k===a.B)?.n||'选项 B';
+  const id='p'+Date.now();
+  const p={id,author:ME.name,time:'刚刚',title:S.csTitle||'帮我选一下？',mode:S.csDeep?'deep':'normal',scope:S.csScope==='spec'?`指定 ${(S.csSpec||[]).length} 位好友`:(S.csScope==='public'?'公开广场':'全部好友'),deadline:S.csDead==='0'?'不截止':(S.csDead==='1h'?'剩 1 小时':S.csDead==='6h'?'剩 6 小时':'剩 24 小时'),
+    opts:[{key:'A',label:nameA,img:a.A},{key:'B',label:nameB,img:a.B}],votes:{A:0,B:0},total:0,status:'voting',picked:null,echoed:false,comments:[]};
+  S.polls.unshift(p);S.mine.unshift(id);S.cs=null;S.csSel=null;S.csAssign=null;S.csNames=null;S.csScope=null;S.csDead=null;S.csBlind=false;S.csDeep=false;
+  toast('已发布，快去落槌收结果吧');go('#feed/'+id);
+}
+/* 路由 */
+window.addEventListener('hashchange',render);
+document.querySelectorAll('.tab,.tab-mid').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.tab);render()}));
+render();
+</script>
+</body>
+</html>
